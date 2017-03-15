@@ -38,24 +38,37 @@ console.log("S: " + sentence + " C: " + sentence_class);
 //classifier.addDocument(sentence, sentence_class);
 });*/
 trainFile.toString().split(/\n/).forEach(function (line) {
-	var string = tokenizer.tokenize(line.replace('ё', 'e'));
+	var string = tokenizer.tokenize(line.replace('ё', 'е'));
 	var sentence = string.slice(0, -1);
 	var sentence_class = string[string.length - 1];
-	async.each(sentence, function (word, callback) {
+	var spl_checked_sentence = [];
+	async.eachOf(sentence, function (word, index, callback) {
 		dict.spellSuggest(word, function (err, correct, suggestion, origWord) {
 			if (!err) {
-				if (correct) {
-					array[index] = origWord;
-				} else if (suggestion != null) {
-					array[index] = suggestion;
+				var temp_word;
+				if (!correct && suggestion != null) {
+					temp_word = suggestion;
+					console.log("orig: " + word + ", suggested: " + suggestion);
+				} else {
+					temp_word = word;
 				}
-				console.log("orig: " + word + " ,suggested: " + array[index]);
+				if (!contains(temp_word, stopwords_ru)) {
+					/*sentence.splice(index, 1);
+					console.log("deleted: " + word);*/
+					spl_checked_sentence.push(temp_word);
+				} else {
+					console.log("deleted: " + temp_word);
+				}
+				//console.log("orig: " + word + ", suggested: " + sentence[index]);
 			}
 			callback();
 		});
+	}, function (err) {		
+		console.log("S: " + spl_checked_sentence + " C: " + sentence_class + "\n");
+		spl_checked_sentence = [];
 	});
-}
-console.log("The End");
+});
+	//console.log("The End");
 	//classifier.train();
 	//classifier.save('classifier.json');
 
