@@ -41,7 +41,8 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 	var string = tokenizer.tokenize(line.replace('ё', 'е'));
 	var sentence = string.slice(0, -1);
 	var sentence_class = string[string.length - 1];
-	var spl_checked_sentence = [];
+	//var spl_checked_sentence = [];
+	var temp_string = "";	
 	async.eachOf(sentence, function (word, index, callback) {
 		dict.spellSuggest(word, function (err, correct, suggestion, origWord) {
 			if (!err) {
@@ -55,7 +56,8 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 				if (!contains(temp_word, stopwords_ru)) {
 					/*sentence.splice(index, 1);
 					console.log("deleted: " + word);*/
-					spl_checked_sentence.push(temp_word);
+					//spl_checked_sentence.push(temp_word);
+					temp_string = temp_string + temp_word + " ";
 				} else {
 					console.log("deleted: " + temp_word);
 				}
@@ -64,7 +66,9 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 			callback();
 		});
 	}, function (err) {		
-		console.log("S: " + spl_checked_sentence + " C: " + sentence_class + "\n");
+		//console.log("S: " + spl_checked_sentence + " C: " + sentence_class + "\n");
+		classifier.addDocument(temp_string.substring(0,temp_string.length-1), sentence_class);
+		console.log(temp_string.substring(0,temp_string.length-1) + " " + sentence_class;
 		spl_checked_sentence = [];
 	});
 });
