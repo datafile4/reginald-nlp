@@ -10,39 +10,12 @@ trainFile = fs.readFileSync('C:\\Users\\emil.alasgarov\\SharedVmware\\data\\data
 stopwords_ru = require('stopwords-ru');
 var dict = new nodehun(affbuf, dictbuf);
 var classifier = new natural.BayesClassifier();
-/*trainFile.toString().split(/\n/).forEach(function (line) {
-var string = tokenizer.tokenize(line.replace('ё','e'));
-//var sentence = tokenizer.tokenize(line[0]);
-//var string = line.split(",");
-var sentence = string.slice(0, -1);
-var sentence_class = string[string.length - 1];
-sentence.forEach(function (word, index, array) {
-dict.spellSuggest(word, function (err, correct, suggestion, origWord) {
-if (!err) {
-if (correct) {
-array[index] = origWord;
-} else if (suggestion != null) {
-array[index] = suggestion;
-}
-console.log("orig: " + word + " ,suggested: " + array[index]);
-}
-});
-});
-sentence.forEach(function (word, index, array) {
-console.log("PING!");
-if (contains(word, stopwords_ru)) {
-array.splice(index, 1);
-}
-});
-console.log("S: " + sentence + " C: " + sentence_class);
-//classifier.addDocument(sentence, sentence_class);
-});*/1
-trainFile.toString().split(/\n/).forEach(function (line) {
-	var string = tokenizer.tokenize(line.replace('ё', 'е'));
-	var sentence = string.slice(0, -1);
-	var sentence_class = string[string.length - 1];
+async.each(trainFile.toString().split(/\n/), function (line, outer_callback) {
+	var temp_line = tokenizer.tokenize(line.replace('ё', 'е'));
+	var sentence = temp_line.slice(0, -1);
+	var sentence_class = temp_line[temp_line.length - 1];
 	//var spl_checked_sentence = [];
-	var temp_string = "";	
+	var temp_sentence = "";
 	async.eachOf(sentence, function (word, index, callback) {
 		dict.spellSuggest(word, function (err, correct, suggestion, origWord) {
 			if (!err) {
@@ -57,7 +30,7 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 					/*sentence.splice(index, 1);
 					console.log("deleted: " + word);*/
 					//spl_checked_sentence.push(temp_word);
-					temp_string = temp_string + temp_word + " ";
+					temp_sentence = temp_sentence + temp_word + " ";
 				} else {
 					console.log(" deleted: " + temp_word);
 				}
@@ -65,23 +38,28 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 			}
 			callback();
 		});
-	}, function (err) {		
+	}, function (err) {
 		//console.log("S: " + spl_checked_sentence + " C: " + sentence_class + "\n");
-		if(!err){
-			classifier.addDocument(temp_string.substring(0,temp_string.length-1), sentence_class);
-			console.log(temp_string.substring(0,temp_string.length-1) + " " + sentence_class + "\n");			
-			//spl_checked_sentence = [];			
+		if (!err) {
+			classifier.addDocument(temp_sentence.substring(0, temp_sentence.length - 1), sentence_class);
+			console.log(temp_sentence.substring(0, temp_sentence.length - 1) + " " + sentence_class + "\n");
+			//spl_checked_sentence = [];
 		} else {
 			console.log("error in addDocument")
 		}
-		temp_string = "";
-	});
+		temp_sentence = "";
+		outer_callback();
+	});	
+}, function (err) {	
+		console.log("The End");	
+		classifier.train();
+		classifier.save('classifier.json');
 });
-	console.log("The End");
-	//classifier.train();
-	//classifier.save('classifier.json');
 
-	function contains(word, stopwords_ru) {
+//classifier.train();
+//classifier.save('classifier.json');
+
+function contains(word, stopwords_ru) {
 	var flag = false;
 	for (var i = 0; i < stopwords_ru.length; i++) {
 		if (stopwords_ru[i] == word) {
