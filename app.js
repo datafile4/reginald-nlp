@@ -36,7 +36,7 @@ array.splice(index, 1);
 });
 console.log("S: " + sentence + " C: " + sentence_class);
 //classifier.addDocument(sentence, sentence_class);
-});*/
+});*/1
 trainFile.toString().split(/\n/).forEach(function (line) {
 	var string = tokenizer.tokenize(line.replace('ё', 'е'));
 	var sentence = string.slice(0, -1);
@@ -59,7 +59,7 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 					//spl_checked_sentence.push(temp_word);
 					temp_string = temp_string + temp_word + " ";
 				} else {
-					console.log("deleted: " + temp_word);
+					console.log(" deleted: " + temp_word);
 				}
 				//console.log("orig: " + word + ", suggested: " + sentence[index]);
 			}
@@ -67,12 +67,17 @@ trainFile.toString().split(/\n/).forEach(function (line) {
 		});
 	}, function (err) {		
 		//console.log("S: " + spl_checked_sentence + " C: " + sentence_class + "\n");
-		classifier.addDocument(temp_string.substring(0,temp_string.length-1), sentence_class);
-		console.log(temp_string.substring(0,temp_string.length-1) + " " + sentence_class;
-		spl_checked_sentence = [];
+		if(!err){
+			classifier.addDocument(temp_string.substring(0,temp_string.length-1), sentence_class);
+			console.log(temp_string.substring(0,temp_string.length-1) + " " + sentence_class + "\n");			
+			//spl_checked_sentence = [];			
+		} else {
+			console.log("error in addDocument")
+		}
+		temp_string = "";
 	});
 });
-	//console.log("The End");
+	console.log("The End");
 	//classifier.train();
 	//classifier.save('classifier.json');
 
